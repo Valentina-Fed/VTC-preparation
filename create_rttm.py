@@ -4,15 +4,14 @@ import pylangacq
 import textgrid
 import collections
 
+#for parsing TextGrid annotations
 def parse_textgrid(annotation, child, rec_name):
-    start = []
-    duration = []
-    speaker = []
+    start, duration, speaker = ([] for n in range(3))
     tg = textgrid.TextGrid.fromFile(annotation)
     dico = collections.defaultdict(list)
     for i in range(len(tg)):
         for j in range(len(tg[i])):
-            if tg[i][j].mark != '' and tg[i][j].minTime not in dico:
+            if tg[i][j].mark != '' and tg[i][j].mark != ' ' and tg[i][j].mark != '0' and tg[i][j].minTime not in dico:
                 v = (tg[i].name.strip(), '{0:.4f}'.format(round(tg[i][j].maxTime - tg[i][j].minTime, 4)))
                 dico[tg[i][j].minTime - 180].append(v)
     for k, v in sorted(dico.items()):
@@ -31,6 +30,8 @@ def parse_textgrid(annotation, child, rec_name):
     df_rttm = pd.DataFrame(data=rttm)
     return df_rttm
 
+def create_dataset(subset):
+    return [name for name in os.listdir(f'{output}/{subset}') if name.endswith('.wav')]
 
 if __name__ == "__main__":
     import argparse
@@ -51,19 +52,10 @@ if __name__ == "__main__":
     o = output.split('/')
     name_corpus = n[len(n) -1]
     name_set = o[len(o) -1]
-    train = [name for name in os.listdir(f'{output}/train') if name.endswith('.wav')]
-    test = [name for name in os.listdir(f'{output}/test') if name.endswith('.wav')]
-    dev = [name for name in os.listdir(f'{output}/dev') if name.endswith('.wav')]
+    dataset = ['train', 'dev', 'test']
+    train, dev, test = map(create_dataset, dataset)
     whole_dataset = train + dev + test
-    rttm_train = []
-    rttm_dev = []
-    rttm_test = []
-    uem_tr = []
-    uem_t = []
-    uem_d = []
-    dur_full_tr = []
-    dur_full_d = []
-    dur_full_t = []
+    rttm_train, rttm_dev, rttm_test, uem_tr, uem_t, uem_d, dur_full_tr, dur_full_d, dur_full_t = ([] for n in range(9))
     corpora = ['vanuatu', 'namibia', 'tsimane2017']
     df = pd.read_csv(f'{corpus}/metadata/annotations.csv')
 
@@ -74,17 +66,13 @@ if __name__ == "__main__":
         INV_name = 'Rose'
         for i, rec in enumerate(recording_filename):
               if rec.endswith('.wav'):
-                  start = []
-                  duration = []
-                  speaker = []
+                  start, duration, speaker = ([] for in range(3))
                   rec_tsay = rec.replace('Tsay', 'tsay')
                   rec_f = rec.split('_')
                   rec_ts = rec.replace('.wav', '')
                   rec_name = rec_tsay.replace('.wav', '')
                   data = pd.read_csv(f'{corpus}/annotations/cha/converted/{ann_filename[i]}')
-                  speaker_id = data['speaker_id']
-                  onset  = data['segment_onset']
-                  offset = data['segment_offset']
+                  speaker_id, onset, offset = data['speaker_id'], data['segment_onset'], offset = data['segment_offset']
                   child = pylangacq.read_chat(f'{corpus}/annotations/cha/raw/{rec_ts}.cha')
                   if 'INV' in child.participants():
                       if child.headers()[0]['Participants']['INV']['name'] != None:
@@ -151,11 +139,7 @@ if __name__ == "__main__":
         uem_d_df.to_csv(f'{output}/dev/tsay.dev.uem', sep=' ', index=False, header=False)
 
     elif name_corpus in corpora:
-        dataset = df['set']
-        recording_filename = df['recording_filename']
-        ann_filename = df['raw_filename']
-        offset = df['range_offset']
-        onset = df['range_onset']
+        dataset, recording_filename, ann_filename, offset, onset = df['set'], df['recording_filename'], df['raw_filename'], offset = df['range_offset'], onset = df['range_onset']
         for i, rec in enumerate(recording_filename):
             if dataset[i].startswith('textgrid') and rec.endswith('.wav'):
                   if name_corpus == 'tsimane2017':
@@ -226,9 +210,7 @@ if __name__ == "__main__":
             recname = f'{name_corpus}_{rec_name}_{onset[i]}_{offset[i]}'
             if dataset[i].startswith('eaf') or dataset[i].startswith('cha'):
                 df_ann = pd.read_csv(f'{corpus}/annotations/{dataset[i]}/converted/{ann_filename[i]}')
-                segment_onset = df_ann['segment_onset']
-                segment_offset = df_ann['segment_offset']
-                speaker = df_ann['speaker_id']
+                segment_onset, segment_offset, speaker = df_ann['segment_onset'], df_ann['segment_offset'], df_ann['speaker_id']
                 speaker_id=[]
                 for j, sp in enumerate(speaker):
                     if sp == 'CHI' or sp == 'CHI*':
