@@ -46,9 +46,7 @@ def distribution():
     rec = f'{corpus}/metadata/recordings.csv'
     dl.get(rec)
     df = pd.read_csv(rec)
-    child_id = df['child_id']
-    recording_filename = df['recording_filename']
-    duration = df['duration']
+    child_id, recording_filename, duration = df['child_id'], df['recording_filename'], df['duration']
     total_duration = sum(duration)
     size_dev = total_duration // 5
     set_child = set(child_id)
@@ -102,11 +100,7 @@ if __name__ == "__main__":
     name_corpus = (m[len(m) - 1]).replace('.git', '')
 
     df = pd.read_csv(f'{corpus}/metadata/annotations.csv')
-    rec_name = df['recording_filename']
-    onset = df['range_onset']
-    offset = df['range_offset']
-    dataset = df['set']
-    filename = df['raw_filename']
+    rec_name, onset, offset, dataset, filename = df['recording_filename'], df['range_onset'], df['range_offset'], df['set'], df['raw_filename']
     if dict_children:
         distribution_from_dict()
     else:
