@@ -50,8 +50,8 @@ if __name__ == "__main__":
     corpus = args.corpus
     n = corpus.split('/')
     o = output.split('/')
-    name_corpus = n[len(n) -1]
-    name_set = o[len(o) -1]
+    name_corpus = n[-1]
+    name_set = o[-1]
     dataset = ['train', 'dev', 'test']
     train, dev, test = map(create_dataset, dataset)
     whole_dataset = train + dev + test
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     if name_corpus == 'tsay':
         recording_filename = df['recording_filename']
         ann_filename = df['annotation_filename']
-        duration_full=df['range_offset']
+        duration_full = df['range_offset']
         INV_name = 'Rose'
         for i, rec in enumerate(recording_filename):
               if rec.endswith('.wav'):
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                       child = rec1[0]
                       rec_name = f"{rec1[1].replace('.wav', '')}_{onset[i]//1000}_{offset[i]//1000}"
                       ann1 = ann_filename[i].split('_')
-                      ann = (ann1[len(ann1) - 1]).replace('.TextGrid', '')
+                      ann = (ann1[-1]).replace('.TextGrid', '')
                   nb = round((offset[i]-onset[i]) / 1000, 0)
                   if f'{rec_name}.wav' in train:
                       df_rttm = parse_textgrid(f'{corpus}/annotations/textgrid/{ann}/raw/{ann_filename[i]}', child, rec_name)
